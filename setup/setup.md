@@ -20,3 +20,22 @@ ssh root@192.168.2.1
 ```
 
 The username by default is "root", the password by default is "analog"
+
+# Updating firmware
+```bash
+# iio_attr -u ip:192.168.2.1 -C fw_version
+fw_version: v0.32
+```
+
+# Building firmware
+https://github.com/analogdevicesinc/plutosdr-fw
+
+```bash
+ sudo apt-get install git build-essential fakeroot libncurses5-dev libssl-dev ccache
+ sudo apt-get install dfu-util u-boot-tools device-tree-compiler libssl1.0-dev mtools
+ sudo apt-get install bc python cpio zip unzip rsync file wget
+ git clone --recursive https://github.com/analogdevicesinc/plutosdr-fw.git
+ cd plutosdr-fw
+ export VIVADO_SETTINGS=/opt/Xilinx/Vivado/2021.2/settings64.sh
+ make
+```
