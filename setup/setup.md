@@ -27,6 +27,11 @@ The username by default is "root", the password by default is "analog"
 fw_version: v0.32
 ```
 
+To check all devices do:
+```
+iio_readdev -S
+```
+
 # Building firmware
 https://github.com/analogdevicesinc/plutosdr-fw
 
@@ -39,3 +44,31 @@ https://github.com/analogdevicesinc/plutosdr-fw
  export VIVADO_SETTINGS=/opt/Xilinx/Vivado/2021.2/settings64.sh
  make
 ```
+
+# Checking USB / Ethernet bandwidth
+
+- The pluto-SDR itself has 20 MHz of bandwidth.
+- The USB itself is limited to about 4 MS/s
+
+## Using the command
+
+### Command
+- iio_readdev -u ip:192.168.2.1 -b 100000 cf-ad9361-lpc | pv > /dev/null
+
+Shows
+- a throughput of about 17-19 MiB/s.
+- bandwidth check shows around 5.1 MHz
+
+- iio_readdev -u usb:3.5.5 -b 100000 cf-ad9361-lpc | pv > /dev/null
+- a throughput of about 25 MiB/s 
+- bandwidth check shows around 6.7 MHz
+
+The main thing here is the buffer-size. It needs to be an integer amount of the pluto internal buffers. It can also be set using the iio-libs:
+- https://ez.analog.com/adieducation/university-program/f/q-a/533760/pluto-sdr-number-of-buffer
+
+### Explanation
+- iio_readdev -u <device_name> -b <buffer_size> <device_name>
+- |: pipe operator -> pass output from one command through as input to the next.
+- pv: piper viewer: shows the progress of the data flowing through pipe
+- /dev/null: linux null device discarding anything it receives
+- cf-ad9361-lpc: core-fpga-AD9361-low-pin-count device

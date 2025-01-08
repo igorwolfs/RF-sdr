@@ -18,10 +18,11 @@ import matplotlib.pyplot as plt
 import time
 
 sample_rate = 10e6 # Hz
-num_samps = 1024 # number of samples per call to rx()
+num_samps = 1024*512 # number of samples per call to rx()
 center_freq = 915e6 # Hz
 
 sdr = adi.Pluto("ip:192.168.2.1")
+# sdr = adi.Pluto("usb:3.5.5")
 sdr.gain_control_mode_chan0 = 'manual'
 sdr.rx_hardwaregain_chan0 = 0.0 # dB, increase to increase the receive gain, but be careful not to saturate the ADC
 sdr.rx_lo = int(center_freq)
