@@ -8,6 +8,8 @@
 # Websites
 - https://jackschaedler.github.io/circles-sines-signals/
 - SDR-radio: https://www.sdr-radio.com/hacks
+- Phased-array radar construction: https://ez.analog.com/ez-blogs/b/engineerzone-spotlight/posts/can-i-build-my-own-phased-array-radar
+
 
 # Software 
 - PySDR: https://pysdr.org/content/pluto.html

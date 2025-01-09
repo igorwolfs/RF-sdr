@@ -1,16 +1,3 @@
-import sys, os, shutil
-from pathlib import Path, PurePath
-
-## PLOT FOLDER SAVE
-file_name = Path(__file__).parts[-1].strip(".py")
-currDir = Path(__file__).parents[0]
-Plot_Path = os.path.join(currDir, file_name)
-if not (os.path.exists(Plot_Path)):
-    os.mkdir(Plot_Path)
-else:
-    shutil.rmtree(Plot_Path)
-    os.mkdir(Plot_Path)
-		
 
 import numpy as np
 import adi, math
@@ -52,3 +39,8 @@ while (1):
     sdr.rx_rf_bandwidth = int(sample_rate)
 
     print(f"-----------------------------------------")
+
+'''
+The reason why the USB-throughput is optimal at buffer sizes higher than 1024 * 128 is likely because the internal buffers of the iio-libs
+have this size by default.
+'''
