@@ -21,3 +21,16 @@ Instead of using 2 LP filter we can do it with one
 1. Insert N-1 zeros between each sample
 2. Run through low-pass filter with bandwidth of B=min(1/N, 1/D)
 3. Decimate signal by factor of D
+
+## Taps
+Filter taps are weights / coefficients used to define the filter.
+
+Number of filter-taps (N) indicates:
+- Amount of memory required to implement the filter.
+- Number of calcualtions required.
+- Number of filtering the filter can do.
+
+
+## Fractional_bw
+
+## 

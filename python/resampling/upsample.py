@@ -50,12 +50,13 @@ Can only be used when the full signal is present.
 ## lfilter
 Causal forward-in-time filtering. Adds delay depending on the frequency used.
 '''
-# Low-pass filter function to prevent aliasing
+# Low-pass filter function to prevent imaging
 def low_pass_filter(data, cutoff, fs, order=5):
     nyquist = 0.5 * fs  # Nyquist frequency
     normal_cutoff = cutoff / nyquist
     b, a = butter(order, normal_cutoff, btype='low', analog=False)
     return lfilter(b, a, data)
+
 # def low_pass_filter(data, cutoff, fs, order=5):
 #     nyquist = 0.5 * fs
 #     normal_cutoff = cutoff / nyquist
@@ -63,7 +64,7 @@ def low_pass_filter(data, cutoff, fs, order=5):
 #     return filtfilt(b, a, data)
 
 # Pass through low-pass filter
-cutoff_freq = sr_low / 2  # Cutoff frequency for anti-aliasing
+cutoff_freq = sr_low / 2  # Cutoff frequency for anti-imaging
 signal_filtered = low_pass_filter(signal_high, cutoff_freq, sr_high)
 
 ######################################################

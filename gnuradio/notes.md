@@ -1,7 +1,9 @@
-# Installing gnu-radio
+# Good links
 
-Apparently you still have to install gnu-radio the hard way, a.k.a.:
-- build libiio from source
-- build libad9361 from source
-- build gnu-radio from source
+## Courses:
+- https://pnsaeta.github.io/Learning_SDR/
 
+# Blocks
+## Repeat-block
+Does upsampling, so makes each symbol last "Interpolation"-samples.
+HOWEVER it does NOT keep the sampling rate the same, it increases the sampling rate in order to keep the bandwidth the same.
