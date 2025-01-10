@@ -171,19 +171,17 @@ psd_dB = 10*np.log10(psd)
 f = np.linspace(sample_rate/-2, sample_rate/2, len(psd))
 
 # Plot time domain
-fig, axs = plt.subplots(2)
+fig, axs = plt.subplots(3)
 
 # Plot the real part in the first subplot
 axs[0].plot(np.real(rx_samples[5000:5500]), label="Real", color='blue')
 axs[1].plot(np.imag(rx_samples[5000:5500]), label="Imaginary", color='orange')
+axs[2].plot(np.angle(rx_samples[5000:5500]) * 180 / np.pi, label="Phase", color='orange')
 plt.savefig(os.path.join(Plot_Path, 'psk_rx_t.png'))
 
 
 # Plot freq domain
-fig, axs = plt.subplots(2)
-axs[0].plot(f/1e6, psd_dB)
+fig, axs = plt.subplots(1)
+axs.plot(f/1e6, psd_dB)
 plt.savefig(os.path.join(Plot_Path, 'psk_rx_f.png'))
 plt.show()
-
-avg_pwr = np.mean(np.abs(rx_samples)**2)
-print(f"average power: {20*math.log(avg_pwr)}")

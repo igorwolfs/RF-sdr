@@ -9,7 +9,6 @@ enx00e022ac8ac0: flags=4163<UP,BROADCAST,RUNNING,MULTICAST>  mtu 1500
         RX errors 0  dropped 0  overruns 0  frame 0
         TX packets 5  bytes 1244 (1.2 KB)
         TX errors 0  dropped 0 overruns 0  carrier 0  collisions 0
-
 ```
 
 ## Connecting through ssh
@@ -72,3 +71,6 @@ The main thing here is the buffer-size. It needs to be an integer amount of the 
 - pv: piper viewer: shows the progress of the data flowing through pipe
 - /dev/null: linux null device discarding anything it receives
 - cf-ad9361-lpc: core-fpga-AD9361-low-pin-count device
+
+
+## Contexts
