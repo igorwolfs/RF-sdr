@@ -17,6 +17,11 @@ import adi, math
 import matplotlib.pyplot as plt
 
 
+##############################################################
+######################### SETTINGS ###########################
+##############################################################
+
+pure_sine = True
 
 sample_rate = 1e6 # Hz
 center_freq = 915e6 # Hz
@@ -32,79 +37,34 @@ sdr.sample_rate = int(sample_rate)
 ###########################################################################################################################
 
 # Config Tx
-'''
-### TX-bandwidth necessity:
-The energy of the signal is spread around 914.5 MHz until 915.15 MHz
-    - Indicated by the tx_rf_bandwidth
-    - Indicates how long each symbol will be transmitted
-The tx_lo frequency specifies the frequency of the local oscillator variable, which determines the carrier wave
-    - In our case it is 915 MHz
-'''
 sdr.tx_rf_bandwidth = int(sample_rate)
 sdr.tx_lo = int(center_freq)
 sdr.tx_hardwaregain_chan0 = -20 # Tx power, valid range is -90 to 0 dB
 
 # Create transmit waveform (QPSK, 16 samples per symbol)
-num_symbols = 1000
-# Create 1000 random numbers between 0 and 3
-x_int = []
-for i in range(int(num_symbols / 4)):
-    x_int.append([0, 2, 1, 3])
-x_int = np.asarray(x_int)
+sine_freq = 25e3
+
 '''
- Create the PSK Phase-shifts:
- - Of the 1000 samples, some samples will be shifted by 45, 135, 225, 315 degrees.
- - Convert them to radians
+We have to generate the samples, so that at a sample_rate of 1 MHz we get a sine-frequency of 50 Hz.
+- Distance between samples in time is 1/sample_rate
+- Create a sine with this sample rate by multiplying this with the sine frequency
 '''
-x_degrees = x_int*360/4.0 + 45
-x_radians = x_degrees*np.pi/180.0
-
-# this produces our QPSK complex symbols
-'''
-Equations involved in mixing:
-s(t) = i(t) + q(t), exp(j*pi*f_lo*t) = cos(2*pi*f_lo*t) + j*sin(2*pi*f_lo*t)
-the signal becomes 
-Re(s(t) * exp(j*2*pi*f_lo*t))
-= i(t) * cos(2*pi*f_lo*t) + q(t) * j*sin(2*pi*f_lo*t)
-- Through which we modulate the phase as well as the amplitude
-    - Amplitude is sqrt(i**2+Q**2), phase is arctan(q/i)
-
-NOTE:
-- Our DAC generates samples (so Q and I) once every MHz.
-    - This generated sample stays the same for 1 us.
-- This generated sample gets multiplied with our carrier wave, real part is filtered out using analog circuitry.
-- Then it gets transmitted.
-'''
-
-x_symbols = np.cos(x_radians) + 1j*np.sin(x_radians)
-
-# Show the phase-shift modulated symbols
-x_symbols_u = np.unique(x_symbols)
-plt.plot(np.real(x_symbols_u), np.imag(x_symbols_u), '.')
-
-plt.xlabel("Imag")
-plt.ylabel("Real")
-
-plt.grid(True)
-plt.savefig(os.path.join(Plot_Path, 'psk.png'))
-plt.show()
+t_in = np.arange(0, 10, 1/sample_rate)
+if (pure_sine):
+    samples_tx = np.sin(t_in * 2 * np.pi * sine_freq)
+else:
+    # Phase shift the signal by 45 degrees (arctan(1))
+    samples_tx = np.sin(t_in * 2 * np.pi * sine_freq) + 1j*np.cos(t_in*2*np.pi*sine_freq)
 
 
-# 16 samples per symbol 
-samples = np.repeat(x_symbols, 32)
-# plt.plot(np.real(rx_samples[::10000]), label="real")
-# plt.plot(np.imag(rx_samples[::10000]), label="imag")
-# Plot the real part in the first subplot
 fig, axs = plt.subplots(2)
-axs[0].plot(np.real(samples[5000:5500]), label="Real", color='blue')
-axs[1].plot(np.imag(samples[5000:5500]), label="Imaginary", color='orange')
+axs[0].plot(np.real(samples_tx[5000:5500]), label="Real", color='blue')
+axs[1].plot(np.imag(samples_tx[5000:5500]), label="Imaginary", color='orange')
+plt.savefig(os.path.join(Plot_Path, 'sine_tx_t.png'))
 
-plt.savefig(os.path.join(Plot_Path, 'psk_tx_t.png'))
-plt.show()
-
-samples *= 2**14 # The PlutoSDR expects samples to be between -2^14 and +2^14, not -1 and +1 like some SDRs
-# Start the transmitter
-sdr.tx_cyclic_buffer = True # Enable cyclic buffers
+samples_tx *= 2**14 # The PlutoSDR expects samples to be between -2^14 and +2^14, not -1 and +1 like some SDRs
+# Keeps transmitting the signal
+sdr.tx_cyclic_buffer = True 
 
 ###########################################################################################################################
 #                                                                                                                         #
@@ -126,40 +86,15 @@ sdr.rx_buffer_size = num_samps
 sdr.gain_control_mode_chan0 = 'manual'
 sdr.rx_hardwaregain_chan0 = 0.0 # dB, increase to increase the receive gain, but be careful not to saturate the ADC
 
-sdr.tx(samples) # start transmitting
+sdr.tx(samples_tx) # start transmitting
 
 # Clear buffer just to be safe
 for i in range (0, 10):
     raw_data = sdr.rx()
 
-# Receive samples
-'''
-Main question here: 
-- What are we receiving?
-
-'''
 rx_samples = sdr.rx()
-
-'''
-### Demodulation
-srx(t) = I(t) * cos(2*pi*fc*t) - Q(t) * sin(2*pi*fc*t)
-
-- fc: carrier frequency
-- It, Q(t): baseband in-phase and quadrature signals
-
-then srx(t) * cos(2*pi*fc*t) = I(t) * pow2(cos(2*pi*fc*t)) - Q(t) * sin(2*pi*fc*t) * cos(2*pi*fc*t)
-This leads to
-- srx(t) * cos(2*pi*fc*t) = I(t) / 2 + I(t) * cos(4*pi*fc*t) / 2 - Q(t)*sin(4*pi*fc*t) / 2
-Which we run through a low pass filter and multiply by 2, resulting in:
-- I(t)
-
-Multiplying the same srx(t) with (-sin(2*pi*fc*t)) gives us Q(t)
-'''
-print(f"{np.shape(rx_samples)}")
-print(f"{np.shape(rx_samples[::1000])}")
-
-# Stop transmitting
 sdr.tx_destroy_buffer()
+
 
 # Calculate fft of the signal
 fft_transformed = np.fft.fft(rx_samples)
@@ -172,18 +107,18 @@ f = np.linspace(sample_rate/-2, sample_rate/2, len(psd))
 
 # Plot time domain
 fig, axs = plt.subplots(2)
-
-# Plot the real part in the first subplot
 axs[0].plot(np.real(rx_samples[5000:5500]), label="Real", color='blue')
 axs[1].plot(np.imag(rx_samples[5000:5500]), label="Imaginary", color='orange')
-plt.savefig(os.path.join(Plot_Path, 'psk_rx_t.png'))
+plt.savefig(os.path.join(Plot_Path, 'sine_rx_t.png'))
 
 
 # Plot freq domain
-fig, axs = plt.subplots(2)
-axs[0].plot(f/1e6, psd_dB)
-plt.savefig(os.path.join(Plot_Path, 'psk_rx_f.png'))
-plt.show()
+fig, axs = plt.subplots(1)
+idx_max = np.where(psd_dB == np.max(psd_dB))
+
+axs.plot(f/1e6, psd_dB)
+axs.set_title(f"Max freq: {f[idx_max] / 1e3} kHz")
+plt.savefig(os.path.join(Plot_Path, 'sine_rx_f.png'))
 
 avg_pwr = np.mean(np.abs(rx_samples)**2)
 print(f"average power: {20*math.log(avg_pwr)}")
