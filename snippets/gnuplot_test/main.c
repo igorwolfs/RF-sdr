@@ -4,11 +4,10 @@
 
 #define NUM_POINTS 5
 #define NUM_COMMANDS 4
+FILE *pipe1_plot=NULL;
+FILE *pipe2_plot=NULL;
 
-static FILE * gnuplot_pipe=NULL;
-
-
-void plot_init(int xmin, int xmax, int ymin, int ymax, const char* name)
+void plot_init(FILE* gnuplot_pipe, int xmin, int xmax, int ymin, int ymax, const char* name)
 {
     // open persistent gnuplot window
     if (gnuplot_pipe != NULL)
@@ -23,7 +22,7 @@ void plot_init(int xmin, int xmax, int ymin, int ymax, const char* name)
     fprintf(gnuplot_pipe, "set yrange [%d:%d]\n", ymin, ymax);
     fflush(gnuplot_pipe);
 }
-void plot(float *data_, size_t size_){
+void plot(FILE *gnuplot_pipe, float *data_, size_t size_){
     // Plot command
     fprintf(gnuplot_pipe, "plot '-' with lines\n");
     for(size_t i=0; i<size_; ++i){
@@ -36,7 +35,7 @@ void plot(float *data_, size_t size_){
     fflush(gnuplot_pipe);          // Force data to be sent
 }
 
-void plot_close(void)
+void plot_close(FILE *gnuplot_pipe)
 {
     pclose(gnuplot_pipe);
 }
@@ -47,20 +46,28 @@ int main()
     //     "set xrange [0:6]", 
     //     "set yrange [0:6]", 
     //     "plot 'data.temp'"};
-    plot_init(-1, 6, -1, 6, "FloatSignal");
+
+    plot_init(pipe1_plot, -1, 6, -1, 6, "FloatSignal");
+    plot_init(pipe2_plot, -1, 6, -1, 6, "FloatSignal");
+
     float xvals_[NUM_POINTS] = {1.0, 2.0, 3.0, 4.0, 5.0};
     float yvals_[NUM_POINTS] = {5.0 ,3.0, 1.0, 3.0, 5.0};
-    float yvals_temp[NUM_POINTS] = {0};
-    
+    float yvals_temp_1[NUM_POINTS] = {0};
+    float yvals_temp_2[NUM_POINTS] = {0};
+
     for (int i=0; i<10; i++)
     {
         sleep(1);
         for (int j=0; j<NUM_POINTS; j++)
         {
-            yvals_temp[(j+i)%NUM_POINTS] = yvals_[j];
+            yvals_temp_1[(j+i)%NUM_POINTS] = yvals_[j];
+            yvals_temp_2[(j+i+2)%NUM_POINTS] = yvals_[j];
         }
-        plot(yvals_temp, NUM_POINTS);
+        plot(pipe1_plot, yvals_temp_1, NUM_POINTS);
+        plot(pipe2_plot, yvals_temp_2, NUM_POINTS);
     }
+    plot_close(pipe1_plot);
+    plot_close(pipe2_plot);
     /*
     // Opens an interface that one can use to send commands as if they were typing into the gnuplot command line.  
      
