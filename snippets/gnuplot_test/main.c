@@ -3,9 +3,16 @@
 #include<unistd.h>
 
 #define NUM_POINTS 5
-#define NUM_COMMANDS 4
-FILE *pipe1_plot=NULL;
-FILE *pipe2_plot=NULL;
+#define NUM_COMMANDS 
+
+static FILE *pipe1_plot=NULL;
+static FILE *pipe2_plot=NULL;
+
+/**
+ * Issue: we are tryingn to open 2 pipes here to gnuplot.
+ * 1. How do you open 2 pipes at the same time
+ * 2. 
+ */
 
 void plot_init(FILE* gnuplot_pipe, int xmin, int xmax, int ymin, int ymax, const char* name)
 {
@@ -26,7 +33,7 @@ void plot(FILE *gnuplot_pipe, float *data_, size_t size_){
     // Plot command
     fprintf(gnuplot_pipe, "plot '-' with lines\n");
     for(size_t i=0; i<size_; ++i){
-    fprintf(gnuplot_pipe, "%zu %f\n", i, data_[i]);
+        fprintf(gnuplot_pipe, "%zu %f\n", i, data_[i]);
     }
     fprintf(gnuplot_pipe, "e\n");
     // refresh can probably be omitted
@@ -48,7 +55,7 @@ int main()
     //     "plot 'data.temp'"};
 
     plot_init(pipe1_plot, -1, 6, -1, 6, "FloatSignal");
-    plot_init(pipe2_plot, -1, 6, -1, 6, "FloatSignal");
+    plot_init(pipe2_plot, -1, 6, -1, 6, "FloatSignal1");
 
     float xvals_[NUM_POINTS] = {1.0, 2.0, 3.0, 4.0, 5.0};
     float yvals_[NUM_POINTS] = {5.0 ,3.0, 1.0, 3.0, 5.0};
