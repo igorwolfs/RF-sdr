@@ -1,1 +1,0 @@
-/usr/bin/cc -rdynamic CMakeFiles/auto_rate_test.dir/auto_rate_test_hw.c.o -o auto_rate_test 

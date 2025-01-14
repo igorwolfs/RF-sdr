@@ -1,1 +1,0 @@
-/usr/bin/cc  -DIIO_CHECK_RET CMakeFiles/ads9361_test.dir/ads9361_test.c.o -o ads9361_test  -liio 

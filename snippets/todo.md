@@ -1,3 +1,12 @@
 # TODO
-- Transmit sine
-- Receive sine
+- Manage to plot multiple gnuplots and update their data in real-time using C
+- The following points we want to reiterate
+    - Transmit a sine and receive the sine
+    - Create plots of the data        
+    - Calculate the fourier transfer and plot this data
+    - Save the plot images
+- Through interfacing / interacting with:
+    - The iio-drivers from a laptop-server connected to the pluto-sdr using a usb-ethernet client (in this case RNDIS is used, but for macOS / AndroidOS one might need CDC-NCM or CDC-ECM)
+    - The iio-drivers directly on the device, and also saving the plots there
+    - The device drivers, and also saving the plots there
+    - The device drivers, and doing the Fourier TF on the FPGA.

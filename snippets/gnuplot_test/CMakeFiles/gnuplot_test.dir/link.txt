@@ -1,0 +1,1 @@
+/usr/bin/cc  -DIIO_CHECK_RET CMakeFiles/gnuplot_test.dir/src/main.c.o CMakeFiles/gnuplot_test.dir/src/gnu_plot_lib.c.o -o gnuplot_test  -liio 
