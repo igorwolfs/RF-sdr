@@ -12,7 +12,7 @@ include_directories(helper_lib/include)
 add_executable(
     ads9361_test 
     src/main.c
-    helper_lib/src/gnu_plot_lib.c 
+    helper_lib/src/csv_writer.c
     ${GETOPT_C_FILE} ${LIBIIO_RC}
 )
 

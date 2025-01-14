@@ -57,10 +57,10 @@ RM = /usr/bin/cmake -E rm -f
 EQUALS = =
 
 # The top-level source directory on which CMake was run.
-CMAKE_SOURCE_DIR = /home/iwolfs/Work/Projects/rf_sdr_project/RF-sdr/snippets/raw/sine_txrx
+CMAKE_SOURCE_DIR = /home/iwolfs/Work/Projects/rf_sdr_project/RF-sdr/snippets/driver_interaction/iio_server
 
 # The top-level build directory on which CMake was run.
-CMAKE_BINARY_DIR = /home/iwolfs/Work/Projects/rf_sdr_project/RF-sdr/snippets/raw/sine_txrx
+CMAKE_BINARY_DIR = /home/iwolfs/Work/Projects/rf_sdr_project/RF-sdr/snippets/driver_interaction/iio_server
 
 #=============================================================================
 # Targets provided globally by CMake.
@@ -87,9 +87,9 @@ rebuild_cache/fast: rebuild_cache
 
 # The main all target
 all: cmake_check_build_system
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/iwolfs/Work/Projects/rf_sdr_project/RF-sdr/snippets/raw/sine_txrx/CMakeFiles /home/iwolfs/Work/Projects/rf_sdr_project/RF-sdr/snippets/raw/sine_txrx//CMakeFiles/progress.marks
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/iwolfs/Work/Projects/rf_sdr_project/RF-sdr/snippets/driver_interaction/iio_server/CMakeFiles /home/iwolfs/Work/Projects/rf_sdr_project/RF-sdr/snippets/driver_interaction/iio_server//CMakeFiles/progress.marks
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/Makefile2 all
-	$(CMAKE_COMMAND) -E cmake_progress_start /home/iwolfs/Work/Projects/rf_sdr_project/RF-sdr/snippets/raw/sine_txrx/CMakeFiles 0
+	$(CMAKE_COMMAND) -E cmake_progress_start /home/iwolfs/Work/Projects/rf_sdr_project/RF-sdr/snippets/driver_interaction/iio_server/CMakeFiles 0
 .PHONY : all
 
 # The main clean target
@@ -129,29 +129,29 @@ ads9361_test/fast:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/ads9361_test.dir/build.make CMakeFiles/ads9361_test.dir/build
 .PHONY : ads9361_test/fast
 
-src/gnu_plot_lib.o: src/gnu_plot_lib.c.o
-.PHONY : src/gnu_plot_lib.o
+helper_lib/src/csv_writer.o: helper_lib/src/csv_writer.c.o
+.PHONY : helper_lib/src/csv_writer.o
 
 # target to build an object file
-src/gnu_plot_lib.c.o:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/ads9361_test.dir/build.make CMakeFiles/ads9361_test.dir/src/gnu_plot_lib.c.o
-.PHONY : src/gnu_plot_lib.c.o
+helper_lib/src/csv_writer.c.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/ads9361_test.dir/build.make CMakeFiles/ads9361_test.dir/helper_lib/src/csv_writer.c.o
+.PHONY : helper_lib/src/csv_writer.c.o
 
-src/gnu_plot_lib.i: src/gnu_plot_lib.c.i
-.PHONY : src/gnu_plot_lib.i
+helper_lib/src/csv_writer.i: helper_lib/src/csv_writer.c.i
+.PHONY : helper_lib/src/csv_writer.i
 
 # target to preprocess a source file
-src/gnu_plot_lib.c.i:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/ads9361_test.dir/build.make CMakeFiles/ads9361_test.dir/src/gnu_plot_lib.c.i
-.PHONY : src/gnu_plot_lib.c.i
+helper_lib/src/csv_writer.c.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/ads9361_test.dir/build.make CMakeFiles/ads9361_test.dir/helper_lib/src/csv_writer.c.i
+.PHONY : helper_lib/src/csv_writer.c.i
 
-src/gnu_plot_lib.s: src/gnu_plot_lib.c.s
-.PHONY : src/gnu_plot_lib.s
+helper_lib/src/csv_writer.s: helper_lib/src/csv_writer.c.s
+.PHONY : helper_lib/src/csv_writer.s
 
 # target to generate assembly for a file
-src/gnu_plot_lib.c.s:
-	$(MAKE) $(MAKESILENT) -f CMakeFiles/ads9361_test.dir/build.make CMakeFiles/ads9361_test.dir/src/gnu_plot_lib.c.s
-.PHONY : src/gnu_plot_lib.c.s
+helper_lib/src/csv_writer.c.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/ads9361_test.dir/build.make CMakeFiles/ads9361_test.dir/helper_lib/src/csv_writer.c.s
+.PHONY : helper_lib/src/csv_writer.c.s
 
 src/main.o: src/main.c.o
 .PHONY : src/main.o
@@ -186,9 +186,9 @@ help:
 	@echo "... edit_cache"
 	@echo "... rebuild_cache"
 	@echo "... ads9361_test"
-	@echo "... src/gnu_plot_lib.o"
-	@echo "... src/gnu_plot_lib.i"
-	@echo "... src/gnu_plot_lib.s"
+	@echo "... helper_lib/src/csv_writer.o"
+	@echo "... helper_lib/src/csv_writer.i"
+	@echo "... helper_lib/src/csv_writer.s"
 	@echo "... src/main.o"
 	@echo "... src/main.i"
 	@echo "... src/main.s"

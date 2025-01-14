@@ -12,6 +12,7 @@
 #include <signal.h>
 #include <stdio.h>
 #include <iio.h>
+#include "csv_writer.h"
 
 /* helper macros */
 #define MHZ(x) ((long long)(x*1000000.0 + .5))
@@ -256,57 +257,20 @@ int main (int argc, char **argv)
 		shutdown();
 	}
 
-	int n_samples_rx = 0;
-	int n_samples_tx = 0;
-	
-	//! READ BYTES
-	ssize_t nbytes_rx, nbytes_tx;
-	char *p_dat, *p_end;
-	ptrdiff_t p_inc;
-		
-	// Schedule TX buffer
-	nbytes_tx = iio_buffer_push(txbuf);
-	if (nbytes_tx < 0) { printf("Error pushing buf %d\n", (int) nbytes_tx); shutdown(); }
-	n_samples_tx = nbytes_tx / iio_device_get_sample_size(tx);
-
-	// Refill RX buffer
-	nbytes_rx = iio_buffer_refill(rxbuf) ;
-	n_samples_rx = nbytes_rx / iio_device_get_sample_size(rx);
-	if (nbytes_rx < 0) { printf("Error refilling buf %d\n",(int) nbytes_rx); shutdown(); }
-
-	if (n_samples_tx != 0)
-	{
-		plot_init();
-	}
-
-	// READ: Get pointers to RX buf and read IQ from RX buf port 0
-	p_inc = iio_buffer_step(rxbuf);
-	p_end = iio_buffer_end(rxbuf);
-	for (p_dat = (char *)iio_buffer_first(rxbuf, rx0_i); p_dat < p_end; p_dat += p_inc) {
-		// Example: swap I and Q
-		const int16_t i = ((int16_t*)p_dat)[0]; // Real (I)
-		const int16_t q = ((int16_t*)p_dat)[1]; // Imag (Q)
-		((int16_t*)p_dat)[0] = q;
-		((int16_t*)p_dat)[1] = i;
-
-	}
-
-	// WRITE: Get pointers to TX buf and write IQ to TX buf port 0
-	p_inc = iio_buffer_step(txbuf);
-	p_end = iio_buffer_end(txbuf);
-	for (p_dat = (char *)iio_buffer_first(txbuf, tx0_i); p_dat < p_end; p_dat += p_inc) {
-		// Example: fill with zeros
-		// 12-bit sample needs to be MSB aligned so shift by 4
-		// https://wiki.analog.com/resources/eval/user-guides/ad-fmcomms2-ebz/software/basic_iq_datafiles#binary_format
-		((int16_t*)p_dat)[0] = 0 << 4; // Real (I)
-		((int16_t*)p_dat)[1] = 0 << 4; // Imag (Q)
-	}
-
 	
 	
+	int idx = 0;
 	printf("* Starting IO streaming (press CTRL+C to cancel)\n");
 	while (!stop)
 	{
+		//! READ BYTES
+
+		int n_samples_rx = 0;
+		int n_samples_tx = 0;
+
+		ssize_t nbytes_rx, nbytes_tx;
+		char *p_dat, *p_end;
+		ptrdiff_t p_inc, t_inc;
 
 		// Schedule TX buffer
 		nbytes_tx = iio_buffer_push(txbuf);
@@ -316,23 +280,36 @@ int main (int argc, char **argv)
 		// Refill RX buffer
 		nbytes_rx = iio_buffer_refill(rxbuf) ;
 		n_samples_rx = nbytes_rx / iio_device_get_sample_size(rx);
+
+
 		if (nbytes_rx < 0) { printf("Error refilling buf %d\n",(int) nbytes_rx); shutdown(); }
 
-		if (n_samples_tx != 0)
-		{
-			plot_init();
-		}
-
 		// READ: Get pointers to RX buf and read IQ from RX buf port 0
-		p_inc = iio_buffer_step(rxbuf);
+		p_inc = iio_buffer_step(rxbuf);		
 		p_end = iio_buffer_end(rxbuf);
+
+		printf("samplesize p_inc: %ld\r\n", p_inc);
+		printf("rx bufstart: %p", iio_buffer_first(rxbuf, rx0_i));
+		
+		t_inc = iio_buffer_step(txbuf);
+		printf("samplesize t_inc: %ld\r\n", t_inc);
+		printf("tx bufstart: %p", iio_buffer_first(txbuf, tx0_i));
+		
+		char* filename_rx;
+		char* filename_tx; 
+
+		sprintf(filename_rx, "rx_samples_%d", idx);
+		sprintf(filename_tx, "tx_samples_%d", idx);
+
+		save_as_csv((uint32_t*)iio_buffer_first(rxbuf, rx0_i), nbytes_rx, filename_rx);
+		save_as_csv((uint32_t*)iio_buffer_first(txbuf, tx0_i), nbytes_tx, filename_tx);
+		/*
 		for (p_dat = (char *)iio_buffer_first(rxbuf, rx0_i); p_dat < p_end; p_dat += p_inc) {
 			// Example: swap I and Q
 			const int16_t i = ((int16_t*)p_dat)[0]; // Real (I)
 			const int16_t q = ((int16_t*)p_dat)[1]; // Imag (Q)
 			((int16_t*)p_dat)[0] = q;
 			((int16_t*)p_dat)[1] = i;
-
 		}
 
 		// WRITE: Get pointers to TX buf and write IQ to TX buf port 0
@@ -345,12 +322,14 @@ int main (int argc, char **argv)
 			((int16_t*)p_dat)[0] = 0 << 4; // Real (I)
 			((int16_t*)p_dat)[1] = 0 << 4; // Imag (Q)
 		}
+		*/
 
 		// Sample counter increment and status output
 
 		nrx += nbytes_rx / iio_device_get_sample_size(rx);
 		ntx += nbytes_tx / iio_device_get_sample_size(tx);
 		printf("\tRX %8.2f MSmp, TX %8.2f MSmp\n", nrx/1e6, ntx/1e6);
+		idx++;
 	}
 
 	shutdown();

@@ -87,3 +87,44 @@ We need plotting libraries which give the possibility to be
 - Are available for ubuntu
 
 Perhaps go with matplotlib, and use a script to simply plot the saved data.
+
+## Data saving library
+Considered HDF5, however too many dependencies and good C-libraries and too much headache for compilation on the arm-cortex A9.
+
+So switch to CSV-files.
+- Save one file for TX, one file for RX
+- Save files for 10 seconds
+- Save files along every step of the process
+
+# Buffering data using IO
+## Data size
+Both TX and RX data are 32 bits / 4 bytes.
+- 16 bits I
+- 16 bits Q
+
+
+## Sending data to buffer
+https://wiki.analog.com/resources/eval/user-guides/ad-fmcomms2-ebz/software/basic_iq_datafiles#binary_format
+
+- I and Q-data needs to be encoded in 16-bit format
+    - First 16 bits are I-data
+    - Second 16 bits are Q-data
+
+For example when encoding an I, Q signal with frequency f for TX DAC:
+```C
+ipart = (2**15) * sin(2 * M_PI * (double)i / (double)(f));
+qpart = (2**15) * cos(2 * M_PI * (double)i / (double)(f));
+
+printf("0x%.8X : %d : %d\n", (ipart << 16) | (qpart & 0xFFFF),  ipart, qpart);
+
+buf[j++] = (ipart << 16) | (qpart & 0xFFFF);
+
+if (d) /* Second Channel */
+    buf[j++] = (ipart << 16) | (qpart & 0xFFFF);
+```
+
+## Receiving data from the  buffer
+Data can be decoded as
+```C
+
+```

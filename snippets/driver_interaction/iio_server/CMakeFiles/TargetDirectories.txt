@@ -1,3 +1,0 @@
-/home/iwolfs/Work/Projects/rf_sdr_project/RF-sdr/snippets/raw/sine_txrx/CMakeFiles/ads9361_test.dir
-/home/iwolfs/Work/Projects/rf_sdr_project/RF-sdr/snippets/raw/sine_txrx/CMakeFiles/edit_cache.dir
-/home/iwolfs/Work/Projects/rf_sdr_project/RF-sdr/snippets/raw/sine_txrx/CMakeFiles/rebuild_cache.dir
