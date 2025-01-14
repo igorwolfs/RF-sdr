@@ -1,8 +1,7 @@
 cmake_minimum_required(VERSION 3.10)
 
-project(ads9361_test CXX)
+project(ads9361_test C)
 
-# set (CMAKE_CXX_STANDARD 11)
 
 if (CMAKE_COMPILER_IS_GNUCC)
     set(CMAKE_C_FLAGS "${CMAKE_C_FLAGS} -DIIO_CHECK_RET")
@@ -11,8 +10,8 @@ endif ()
 include_directories(helper_lib/include)
 
 set(SOURCES
-    src/main.cpp
-    helper_lib/src/csv_writer.cpp
+    src/main.c
+    helper_lib/src/csv_writer.c
 )
 
 add_executable(
@@ -23,9 +22,7 @@ add_executable(
 
 
 target_link_libraries(ads9361_test 
-    iio
-    m
-    stdc++fs)
+    iio)
 
 # set(IIO_EXAMPLES_TARGETS ads9361_test)
 
