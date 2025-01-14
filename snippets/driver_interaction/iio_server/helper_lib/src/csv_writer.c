@@ -30,7 +30,6 @@ void save_as_csv(uint32_t* buffer, int64_t buflen, char* filename)
     else
     {
         printf("Folder %s exists\r\n", SAVE_FOLDER);
-
     }
 
     // Open the file using the provided filename
@@ -56,6 +55,11 @@ void save_as_csv(uint32_t* buffer, int64_t buflen, char* filename)
 
     int n_samples = (int) buflen / (BUFFER_ELEMENT_SIZE);
 
+    
+    // for (int i=0; i<10; i++)
+    // {
+    //     printf("%x, ", buffer[i*10]);
+    // }
     // From 0 -> bufflen in terms of timesteps
     for (int i = 0; i < n_samples; i++)
     {

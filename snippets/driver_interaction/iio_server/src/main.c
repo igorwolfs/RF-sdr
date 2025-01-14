@@ -289,43 +289,26 @@ int main (int argc, char **argv)
 		p_end = (char*)iio_buffer_end(rxbuf);
 
 		printf("samplesize p_inc: %ld\r\n", p_inc);
-		printf("rx bufstart: %p", iio_buffer_first(rxbuf, rx0_i));
+		printf("rx bufstart: %p\r\n", iio_buffer_first(rxbuf, rx0_i));
 		
 		t_inc = (ptrdiff_t)iio_buffer_step(txbuf);
-		printf("samplesize t_inc: %ld\r\n", t_inc);
-		printf("tx bufstart: %p", iio_buffer_first(txbuf, tx0_i));
+		printf("samplesize t_inc: %ld\r\n\r\n", t_inc);
+		printf("tx bufstart: %p\r\n", iio_buffer_first(txbuf, tx0_i));
 		
-		char* filename_rx;
-		char* filename_tx; 
+		char filename_rx[30];
+		char filename_tx[30];
 
-		sprintf(filename_rx, "rx_samples_%d", idx);
-		sprintf(filename_tx, "tx_samples_%d", idx);
+		sprintf(filename_rx, "sam_rx_%d\r\n", idx);
+		sprintf(filename_tx, "sam_tx_%d\r\n", idx);
+
+		uint32_t *buffer_rx = iio_buffer_first(rxbuf, rx0_i);
+		uint32_t *buffer_tx = iio_buffer_first(txbuf, rx0_i);
+
 
 		save_as_csv((uint32_t*)iio_buffer_first(rxbuf, rx0_i), nbytes_rx, filename_rx);
 		save_as_csv((uint32_t*)iio_buffer_first(txbuf, tx0_i), nbytes_tx, filename_tx);
-		/*
-		for (p_dat = (char *)iio_buffer_first(rxbuf, rx0_i); p_dat < p_end; p_dat += p_inc) {
-			// Example: swap I and Q
-			const int16_t i = ((int16_t*)p_dat)[0]; // Real (I)
-			const int16_t q = ((int16_t*)p_dat)[1]; // Imag (Q)
-			((int16_t*)p_dat)[0] = q;
-			((int16_t*)p_dat)[1] = i;
-		}
-
-		// WRITE: Get pointers to TX buf and write IQ to TX buf port 0
-		p_inc = iio_buffer_step(txbuf);
-		p_end = iio_buffer_end(txbuf);
-		for (p_dat = (char *)iio_buffer_first(txbuf, tx0_i); p_dat < p_end; p_dat += p_inc) {
-			// Example: fill with zeros
-			// 12-bit sample needs to be MSB aligned so shift by 4
-			// https://wiki.analog.com/resources/eval/user-guides/ad-fmcomms2-ebz/software/basic_iq_datafiles#binary_format
-			((int16_t*)p_dat)[0] = 0 << 4; // Real (I)
-			((int16_t*)p_dat)[1] = 0 << 4; // Imag (Q)
-		}
-		*/
 
 		// Sample counter increment and status output
-
 		nrx += nbytes_rx / iio_device_get_sample_size(rx);
 		ntx += nbytes_tx / iio_device_get_sample_size(tx);
 		printf("\tRX %8.2f MSmp, TX %8.2f MSmp\n", nrx/1e6, ntx/1e6);
