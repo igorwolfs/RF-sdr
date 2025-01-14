@@ -96,6 +96,8 @@ So switch to CSV-files.
 - Save files for 10 seconds
 - Save files along every step of the process
 
+We decide to write our own file-writer meant for C, since compilers for the ARM-toolchain seem to only partially support C++11 features and we don't want to start using libraries which in the end don't compile with lower CPP versions.
+
 # Buffering data using IO
 ## Data size
 Both TX and RX data are 32 bits / 4 bytes.

@@ -285,13 +285,13 @@ int main (int argc, char **argv)
 		if (nbytes_rx < 0) { printf("Error refilling buf %d\n",(int) nbytes_rx); shutdown(); }
 
 		// READ: Get pointers to RX buf and read IQ from RX buf port 0
-		p_inc = iio_buffer_step(rxbuf);		
-		p_end = iio_buffer_end(rxbuf);
+		p_inc = (ptrdiff_t)iio_buffer_step(rxbuf);		
+		p_end = (char*)iio_buffer_end(rxbuf);
 
 		printf("samplesize p_inc: %ld\r\n", p_inc);
 		printf("rx bufstart: %p", iio_buffer_first(rxbuf, rx0_i));
 		
-		t_inc = iio_buffer_step(txbuf);
+		t_inc = (ptrdiff_t)iio_buffer_step(txbuf);
 		printf("samplesize t_inc: %ld\r\n", t_inc);
 		printf("tx bufstart: %p", iio_buffer_first(txbuf, tx0_i));
 		

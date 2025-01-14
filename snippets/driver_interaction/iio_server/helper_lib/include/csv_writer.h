@@ -5,7 +5,8 @@
 #define BUFFER_ELEMENT_SIZE     32 // Size of individual bit size
 #define RX_TX_SAMPLING_RATE     2.5e6
 
-void save_as_csv(float *rms_samples, int size_t, char* filename);
+#include <stdint.h>
+void save_as_csv(uint32_t *samples, int64_t buflen, char* filename);
 
 
 #endif

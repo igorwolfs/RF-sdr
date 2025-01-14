@@ -10,7 +10,7 @@
 
 
 
-void save_as_csv(uint32_t* buffer, int size_t, char* filename)
+void save_as_csv(uint32_t* buffer, int64_t buflen, char* filename)
 {   
     // ***************** TIME HEADER AND FILE CREATION ***************************
     std::time_t save_time = std::chrono::system_clock::to_time_t(std::chrono::system_clock::now());
@@ -56,12 +56,12 @@ void save_as_csv(uint32_t* buffer, int size_t, char* filename)
 
     // ***************** DATA HEADER AND WRITING ***************************
     // Write the buffer to the file, comma-separated
-    double t_step = 1.0/((double)RX_TX_SAMPLING_RATE)
+    double t_step = 1.0/((double)RX_TX_SAMPLING_RATE);
     file << "time (ms), I, Q\r\n";
-    int n_samples = (int) bufflen / (BUFFER_ELEMENT_SIZE);
+    int n_samples = (int) buflen / (BUFFER_ELEMENT_SIZE);
 
     // From 0 -> bufflen in terms of timesteps
-    for (int i = 0; i < bufflen; i++)
+    for (int i = 0; i < n_samples; i++)
     {
         int16_t ipart = (int16_t)((buffer[i] & 0xffff0000) >> 16);
         int16_t qpart = (int16_t)(buffer[i] & 0xffff);
