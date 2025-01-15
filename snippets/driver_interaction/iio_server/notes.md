@@ -125,8 +125,14 @@ if (d) /* Second Channel */
     buf[j++] = (ipart << 16) | (qpart & 0xFFFF);
 ```
 
-## Receiving data from the  buffer
-Data can be decoded as
-```C
-
+# Gain Setting
+Added settings to change LNA gain, settings can be checked using:
+```bash
+iio_attr -u ip:192.168.2.1 -c ad9361-phy voltage0 hardwaregain
 ```
+
+NOTE: only in_voltage0_gain_control_mode exists, so OUT doesn't and can thus not be set.
+
+## Gain settings
+Initial gain settings seem to be somewhat low, which is weird. Might be a problem where transmission and receive is in mismatch, and cyclic sending is required.
+Try to increase the gain by 10 dB more to see what happens.

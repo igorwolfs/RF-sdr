@@ -22,6 +22,7 @@ add_executable(
 
 
 target_link_libraries(ads9361_test 
+    m
     iio)
 
 # set(IIO_EXAMPLES_TARGETS ads9361_test)
