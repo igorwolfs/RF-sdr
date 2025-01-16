@@ -55,8 +55,10 @@ for i in range(len(sam_rx_files)):
     file_tx = os.path.join(Data_Path, f'sam_tx_{i}')
 
     df_rx = pd.read_csv(file_rx, delimiter=',', header=1, names=['timestamp', 'I', 'Q'])
-    df_tx = pd.read_csv(file_tx, delimiter=',', header=1, names=['timestamp', 'I', 'Q'])
-
+    try:
+        df_tx = pd.read_csv(file_tx, delimiter=',', header=1, names=['timestamp', 'I', 'Q'])
+    except:
+        df_tx = pd.read_csv(os.path.join(Data_Path, f'sam_tx_0'), delimiter=',', header=1, names=['timestamp', 'I', 'Q'])
     fig, ax = plt.subplots(2)
     print(f"Data file path: {file_rx}")
     print(df_rx)
