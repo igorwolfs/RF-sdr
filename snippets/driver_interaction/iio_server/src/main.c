@@ -277,36 +277,22 @@ int main (int argc, char **argv)
 	printf("* Creating non-cyclic IIO buffers with 1 MiS\n");
 	size_t bitsize = 1024*32;
 	rxbuf = iio_device_create_buffer(rx, bitsize, false);
-	int ret = iio_buffer_set_blocking_mode(rxbuf, false);
 	if (!rxbuf) {
 		perror("Could not create RX buffer");
 		shutdown();
 	}
-	if (ret) {
-		printf("err: %d", ret);
-		perror("Setting RX buffer to blocking failed\r\n");
-		shutdown();
-	}
 	txbuf = iio_device_create_buffer(tx, bitsize, cyclical);
-	ret = iio_buffer_set_blocking_mode(txbuf, false);
 	if (!txbuf) {
 		perror("Could not create TX buffer");
 		shutdown();
 	}
-	if (ret) {
-		printf("err: %d", ret);
-		perror("Setting TX buffer to blocking failed\r\n");
-		shutdown();
-	}
+
 	size_t n_samples = (bitsize / 16) * 2;
 	
 	
 	int idx = 0;
-	
-	int tx_busy;
-	int rx_busy;
 	printf("* Starting IO streaming (press CTRL+C to cancel)\n");
-	while ((!stop) && (idx < 100))
+	while ((!stop) && (idx < 50))
 	{
 		//! READ BYTES
 
@@ -331,15 +317,13 @@ int main (int argc, char **argv)
 				int16_t qpart = (int16_t)(pow(2, 15)) * cos(2.0 * (double)M_PI * (t_index * (double)(F_MOD)));
 				buffer_tx[i] = (ipart << 16) | (qpart & 0xFFFF);
 			}
-			while (iio_buffer_push(txbuf) == -EAGAIN){;}
+			nbytes_tx = iio_buffer_push(txbuf);
 		}
 		if (nbytes_tx < 0) { printf("Error pushing buf %d\n", (int) nbytes_tx); shutdown(); }
 		n_samples_tx = nbytes_tx / iio_device_get_sample_size(tx);
 
 		// Refill RX buffer
-		while (iio_buffer_refill(rxbuf)) {;}
-		// nbytes_rx = iio_buffer_refill(rxbuf) ;
-
+		nbytes_rx = iio_buffer_refill(rxbuf) ;
 		n_samples_rx = nbytes_rx / iio_device_get_sample_size(rx);
 
 
