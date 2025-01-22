@@ -1,0 +1,2 @@
+- https://ez.analog.com/adieducation/university-program/f/q-a/108205/plutosdr-minimal-tool-chain-for-c-compiling
+- The example assumes that it is on the pluto by default https://ez.analog.com/adieducation/university-program/f/q-a/111671/pluto-to-pluto-data-link

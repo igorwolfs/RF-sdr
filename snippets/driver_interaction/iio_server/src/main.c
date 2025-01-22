@@ -8,22 +8,21 @@
 
 #include <stdbool.h>
 #include <stdint.h>
-#include <stdlib.h>
 #include <string.h>
 #include <signal.h>
 #include <stdio.h>
 #include <iio.h>
 #include <math.h>
-#include <unistd.h>
 
+#include <errno.h>
 #include "csv_writer.h"
-
 
 /* helper macros */
 #define MHZ(x) ((long long)(x*1000000.0 + .5))
 #define GHZ(x) ((long long)(x*1000000000.0 + .5))
 
 #define F_MOD	12e3
+
 /**
  * Triggered if false is returned
  */
@@ -96,17 +95,18 @@ static void wr_ch_lli(struct iio_channel *chn, const char* what, long long val)
 	errchk(iio_channel_attr_write_longlong(chn, what, val), what);
 }
 
+/* write attribute: string */
+static void wr_ch_str(struct iio_channel *chn, const char* what, const char* str)
+{
+	errchk(iio_channel_attr_write(chn, what, str), what);
+}
+
 /* write attribute: double */
 static void wr_ch_d(struct iio_channel *chn, const char* what, double val)
 {
 	errchk(iio_channel_attr_write_double(chn, what, val), what);
 }
 
-/* write attribute: string */
-static void wr_ch_str(struct iio_channel *chn, const char* what, const char* str)
-{
-	errchk(iio_channel_attr_write(chn, what, str), what);
-}
 
 /* helper function generating channel names */
 static char* get_ch_name(const char* type, int id)
@@ -184,9 +184,8 @@ bool cfg_ad9361_streaming_ch(struct stream_cfg *cfg, enum iodev type, int chid)
 	wr_ch_str(chn, "rf_port_select",     cfg->rfport);
 	wr_ch_lli(chn, "rf_bandwidth",       cfg->bw_hz);
 	wr_ch_lli(chn, "sampling_frequency", cfg->fs_hz);
-	// WRITE MANUAL
-	// out_voltage0_hardwaregain
-	// 
+
+	// Configure LO channel
 	if (type == RX)
 	{
 		wr_ch_str(chn, "gain_control_mode", cfg->gain_ctrl_mode);
@@ -195,15 +194,12 @@ bool cfg_ad9361_streaming_ch(struct stream_cfg *cfg, enum iodev type, int chid)
 	{
 		wr_ch_d(chn, "hardwaregain", cfg->hw_gain);
 	}
-	// iio_channel_attr_read_double
-	// Configure LO channel
+
 	printf("* Acquiring AD9361 %s lo channel\n", type == TX ? "TX" : "RX");
 	if (!get_lo_chan(type, &chn)) { return false; }
 	wr_ch_lli(chn, "frequency", cfg->lo_hz);
 	return true;
 }
-
-
 
 /* simple configuration and streaming */
 /* usage:
@@ -224,13 +220,12 @@ int main (int argc, char **argv)
 	size_t nrx = 0;
 	size_t ntx = 0;
 
-	// Buffer steps
-	ptrdiff_t p_inc, t_inc;
-
 	// Stream configurations
 	struct stream_cfg rxcfg;
 	struct stream_cfg txcfg;
 
+
+	bool cyclical = false;
 	// Listen to ctrl+c and IIO_ENSURE
 	signal(SIGINT, handle_sig);
 
@@ -239,16 +234,12 @@ int main (int argc, char **argv)
 	rxcfg.fs_hz = MHZ(2.5); // 2.5 MS/s rx sample rate
 	rxcfg.lo_hz = GHZ(2.5); // 2.5 GHz rf frequency
 	rxcfg.rfport = "A_BALANCED"; // port A (select for rf freq.)
-	rxcfg.gain_ctrl_mode = "manual";
-	rxcfg.hw_gain = 0; // as in pyadi
 
 	// TX stream config
 	txcfg.bw_hz = MHZ(1.5); // 1.5 MHz rf bandwidth
 	txcfg.fs_hz = MHZ(2.5);   // 2.5 MS/s tx sample rate
 	txcfg.lo_hz = GHZ(2.5); // 2.5 GHz rf frequency
 	txcfg.rfport = "A"; // port A (select for rf freq.)
-	txcfg.gain_ctrl_mode = "manual";
-	txcfg.hw_gain = -10; // as in pyadi
 
 	printf("* Acquiring IIO context\n");
 	if (argc == 1) {
@@ -260,11 +251,15 @@ int main (int argc, char **argv)
 	IIO_ENSURE(iio_context_get_devices_count(ctx) > 0 && "No devices");
 
 	printf("* Acquiring AD9361 streaming devices\n");
-	IIO_ENSURE(get_ad9361_stream_dev(RX, &rx) && "No rx dev found");
 	IIO_ENSURE(get_ad9361_stream_dev(TX, &tx) && "No tx dev found");
+	IIO_ENSURE(get_ad9361_stream_dev(RX, &rx) && "No rx dev found");
 
 	printf("* Configuring AD9361 for streaming_\n");
+	rxcfg.hw_gain = 0;
+	rxcfg.gain_ctrl_mode = "manual";
 	IIO_ENSURE(cfg_ad9361_streaming_ch(&rxcfg, RX, 0) && "RX port 0 not found");
+	
+	txcfg.hw_gain = -20;
 	IIO_ENSURE(cfg_ad9361_streaming_ch(&txcfg, TX, 0) && "TX port 0 not found");
 
 	printf("* Initializing AD9361 IIO streaming channels\n");
@@ -279,65 +274,106 @@ int main (int argc, char **argv)
 	iio_channel_enable(tx0_i);
 	iio_channel_enable(tx0_q);
 
-
-	size_t n_samples = (1024 * 1024 * 10 / 16) * 2;
-	size_t bufsize = 1024*1024*10;
 	printf("* Creating non-cyclic IIO buffers with 1 MiS\n");
-	rxbuf = iio_device_create_buffer(rx, bufsize, false);
+	size_t bitsize = 1024*32;
+	rxbuf = iio_device_create_buffer(rx, bitsize, false);
+	int ret = iio_buffer_set_blocking_mode(rxbuf, false);
 	if (!rxbuf) {
 		perror("Could not create RX buffer");
 		shutdown();
 	}
-
-	txbuf = iio_device_create_buffer(tx, bufsize, true);
+	if (ret) {
+		printf("err: %d", ret);
+		perror("Setting RX buffer to blocking failed\r\n");
+		shutdown();
+	}
+	txbuf = iio_device_create_buffer(tx, bitsize, cyclical);
+	ret = iio_buffer_set_blocking_mode(txbuf, false);
 	if (!txbuf) {
 		perror("Could not create TX buffer");
 		shutdown();
 	}
-
-
-	uint32_t *buffer_tx = iio_buffer_first(txbuf, tx0_i);
-
-
-	for (int i=0; i<n_samples; i++)
-	{
-		//! t -> index should take timesteps equal to the sampling period
-		//!   -> frequency of the sine should be F_MOD
-		double t_index = ((double) i) / (double) txcfg.fs_hz;
-		// printf("t_index: %.6f", t_index);
-		int16_t ipart = (int16_t)(pow(2, 15)) * sin(2.0 * (double)M_PI * (t_index * (double)(F_MOD)));
-		int16_t qpart = (int16_t)(pow(2, 15)) * cos(2.0 * (double)M_PI * (t_index * (double)(F_MOD)));
-		buffer_tx[i] = (ipart << 16) | (qpart & 0xFFFF);
-	}
-	char filename_tx[30];
-	sprintf(filename_tx, "sam_tx_%d", 0);
-	save_as_csv((uint32_t*)iio_buffer_first(txbuf, tx0_i), bufsize, filename_tx);
-
-
-	// 3) Push once
-	ssize_t nbytes_tx = iio_buffer_push(txbuf);
-	if (nbytes_tx < 0) {
-		fprintf(stderr, "Error pushing buf %zd\n", nbytes_tx);
+	if (ret) {
+		printf("err: %d", ret);
+		perror("Setting TX buffer to blocking failed\r\n");
 		shutdown();
 	}
-		
+	size_t n_samples = (bitsize / 16) * 2;
+	
+	
 	int idx = 0;
+	
+	int tx_busy;
+	int rx_busy;
 	printf("* Starting IO streaming (press CTRL+C to cancel)\n");
-	while (!stop)
+	while ((!stop) && (idx < 100))
 	{
-		printf("Idx: %d", idx);
 		//! READ BYTES
-		// Refill RX bu	ffer
-		size_t nbytes_rx = iio_buffer_refill(rxbuf) ;
+
+		int n_samples_rx = 0;
+		int n_samples_tx = 0;
+
+		ssize_t nbytes_rx, nbytes_tx;
+		char *p_dat, *p_end;
+		ptrdiff_t p_inc, t_inc;
+
+		// Schedule TX buffer
+		uint32_t *buffer_tx = iio_buffer_first(txbuf, rx0_i);
+		if (!(cyclical && (idx != 0)))
+		{
+			for (int i=0; i<n_samples; i++)
+			{
+				//! t -> index should take timesteps equal to the sampling periodc
+				//!   -> frequency of the sine should be F_MOD
+				double t_index = ((double) i) / (double) txcfg.fs_hz;
+				// printf("t_index: %.6f", t_index);
+				int16_t ipart = (int16_t)(pow(2, 15)) * sin(2.0 * (double)M_PI * (t_index * (double)(F_MOD)));
+				int16_t qpart = (int16_t)(pow(2, 15)) * cos(2.0 * (double)M_PI * (t_index * (double)(F_MOD)));
+				buffer_tx[i] = (ipart << 16) | (qpart & 0xFFFF);
+			}
+			while (iio_buffer_push(txbuf) == -EAGAIN){;}
+		}
+		if (nbytes_tx < 0) { printf("Error pushing buf %d\n", (int) nbytes_tx); shutdown(); }
+		n_samples_tx = nbytes_tx / iio_device_get_sample_size(tx);
+
+		// Refill RX buffer
+		while (iio_buffer_refill(rxbuf)) {;}
+		// nbytes_rx = iio_buffer_refill(rxbuf) ;
+
+		n_samples_rx = nbytes_rx / iio_device_get_sample_size(rx);
+
 
 		if (nbytes_rx < 0) { printf("Error refilling buf %d\n",(int) nbytes_rx); shutdown(); }
 
+		// READ: Get pointers to RX buf and read IQ from RX buf port 0
+		p_inc = (ptrdiff_t)iio_buffer_step(rxbuf);		
+		p_end = (char*)iio_buffer_end(rxbuf);
+
+		printf("samplesize p_inc: %ld\r\n", p_inc);
+		printf("rx bufstart: %p\r\n", iio_buffer_first(rxbuf, rx0_i));
+		
+		t_inc = (ptrdiff_t)iio_buffer_step(txbuf);
+		printf("samplesize t_inc: %ld\r\n\r\n", t_inc);
+		printf("tx bufstart: %p\r\n", iio_buffer_first(txbuf, tx0_i));
+		
 		char filename_rx[30];
+		char filename_tx[30];
+
 		sprintf(filename_rx, "sam_rx_%d", idx);
+		sprintf(filename_tx, "sam_tx_%d", idx);
+
 		uint32_t *buffer_rx = iio_buffer_first(rxbuf, rx0_i);
+
 		save_as_csv((uint32_t*)iio_buffer_first(rxbuf, rx0_i), nbytes_rx, filename_rx);
+		if (!(cyclical && (idx != 0)))
+		{
+			save_as_csv((uint32_t*)iio_buffer_first(txbuf, tx0_i), nbytes_tx, filename_tx);
+		}
 
 		// Sample counter increment and status output
+		nrx += nbytes_rx / iio_device_get_sample_size(rx);
+		ntx += nbytes_tx / iio_device_get_sample_size(tx);
+		printf("\tRX %8.2f MSmp, TX %8.2f MSmp\n", nrx/1e6, ntx/1e6);
 		idx++;
 	}
 

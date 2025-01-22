@@ -13,8 +13,7 @@ currDir = Path(__file__).parents[0]
 ################# SETTINGS #######################
 ##################################################
 
-folder_name = "iio_server"
-
+folder_name = "iio_server_working"
 
 
 ##################################################
@@ -47,7 +46,7 @@ csv_file_list = sorted([file for file in os.listdir(Data_Path)])
 sam_rx_files = [file for file in csv_file_list if file.startswith("sam_rx")]
 sam_tx_files = [file for file in csv_file_list if file.startswith("sam_tx")]
 
-sam_range_min = -1000
+sam_range_min = -5000
 sam_range_max = -1
 
 for i in range(len(sam_rx_files)):

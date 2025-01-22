@@ -1,1 +1,0 @@
-/usr/bin/cc  -DIIO_CHECK_RET CMakeFiles/ads9361_test.dir/src/main.c.o CMakeFiles/ads9361_test.dir/src/gnu_plot_lib.c.o -o ads9361_test  -liio 

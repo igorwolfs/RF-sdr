@@ -125,14 +125,17 @@ if (d) /* Second Channel */
     buf[j++] = (ipart << 16) | (qpart & 0xFFFF);
 ```
 
-# Gain Setting
-Added settings to change LNA gain, settings can be checked using:
-```bash
-iio_attr -u ip:192.168.2.1 -c ad9361-phy voltage0 hardwaregain
+# Observation
+It seems like I'm encountering a similar thing as this guy: https://ez.analog.com/adieducation/university-program/f/q-a/567724/iio_buffer_push-and-iio_buffer_refill-not-behaving-correctly.
+
+## Creating blocking functions
+Getting ENOSYS=-38 error on calling 
+- ret = iio_buffer_set_blocking_mode(txbuf, false).
+
+
+```C
+ret = iio_buffer_set_blocking_mode(txbuf, false);
+
+__api __check_ret int iio_buffer_set_blocking_mode(struct iio_buffer *buf, bool blocking);
 ```
-
-NOTE: only in_voltage0_gain_control_mode exists, so OUT doesn't and can thus not be set.
-
-## Gain settings
-Initial gain settings seem to be somewhat low, which is weird. Might be a problem where transmission and receive is in mismatch, and cyclic sending is required.
-Try to increase the gain by 10 dB more to see what happens.
+Which means the api doesn't exist for that device.
