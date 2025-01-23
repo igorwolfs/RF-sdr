@@ -15,13 +15,13 @@ set(SOURCES
 )
 
 add_executable(
-    ads9361_test 
+    ads9361_libiio_txrx.bin
     ${SOURCES}
     ${GETOPT_C_FILE} ${LIBIIO_RC}
 )
 
 
-target_link_libraries(ads9361_test 
+target_link_libraries(ads9361_libiio_txrx.bin 
     m
     iio)
 
