@@ -17,6 +17,7 @@
 #include <errno.h>
 #include "csv_writer.h"
 
+#define M_PI 3.14159265
 /* helper macros */
 #define MHZ(x) ((long long)(x*1000000.0 + .5))
 #define GHZ(x) ((long long)(x*1000000000.0 + .5))

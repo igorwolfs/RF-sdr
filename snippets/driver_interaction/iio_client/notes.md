@@ -59,13 +59,17 @@ It happens to be the case that one can't use the vitis toolchains anymore to bui
 after v0.36 since from then onwards there was a switch to uClibc sysroot instead of glibc sysrppt-
 
 ## Installing linaro toolchain
+
+
+
 From the buildroot folder its visible that
 - gcc-linaro-7.3.1-2018.05-x86_64_arm-linux-gnueabihf was used to compile the image.
 
 So in the desired location:
 ```bash
-sudo wget https://releases.linaro.org/components/toolchain/binaries/7.3-2018.05/aarch64-linux-gnu/gcc-linaro-7.3.1-2018.05-x86_64_aarch64-linux-gnu.tar.xz
-sudo tar -xf gcc-linaro-7.3.1-2018.05-x86_64_aarch64-linux-gnu.tar.xz
+sudo wget https://releases.linaro.org/components/toolchain/binaries/7.3-2018.05/arm-linux-gnueabihf/gcc-linaro-7.3.1-2018.05-i686_arm-linux-gnueabihf.tar.xz
+
+sudo tar -xf gcc-linaro-7.3.1-2018.05-i686_arm-linux-gnueabihf.tar.xz
 ```
 
 And add the toolchain to your path.
@@ -83,28 +87,28 @@ collect2: error: ld returned 1 exit status
 And even when trying the example from the analog-devices website, we get the following result for a simple main.c:
 
 ```bash
-arm-linux-gnueabihf-gcc -mfloat-abi=hard  --sysroot=$HOME/pluto-0.30.sysroot -std=gnu99 -g -o pluto_stream main.c 
-/usr/local/bin/gcc-linaro-7.2.1-2017.11-i686_arm-linux-gnueabihf/bin/../lib/gcc/arm-linux-gnueabihf/7.2.1/../../../../arm-linux-gnueabihf/bin/ld: cannot find crt1.o: No such file or directory
-/usr/local/bin/gcc-linaro-7.2.1-2017.11-i686_arm-linux-gnueabihf/bin/../lib/gcc/arm-linux-gnueabihf/7.2.1/../../../../arm-linux-gnueabihf/bin/ld: cannot find crti.o: No such file or directory
-collect2: error: ld returned 1 exit status
+ $PLUTOSDR_TOOLCHAIN/arm-linux-gnueabihf-gcc -mfloat-abi=hard  --sysroot=$PLUTOSDR_SYSROOT -std=gnu99 -g -o pluto_stream main.c -lpthread -liio -lm -Wall -Wextra
 ```
 
-and 
-```bash
-arm-linux-gnueabihf-gcc -mfloat-abi=hard  --sysroot=$HOME/pluto-0.30.sysroot -std=gnu99 -g -o pluto_stream main.c -lpthread -liio -lm -Wall -Wextra
-/usr/local/bin/gcc-linaro-7.2.1-2017.11-i686_arm-linux-gnueabihf/bin/../lib/gcc/arm-linux-gnueabihf/7.2.1/../../../../arm-linux-gnueabihf/bin/ld: cannot find crt1.o: No such file or directory
-/usr/local/bin/gcc-linaro-7.2.1-2017.11-i686_arm-linux-gnueabihf/bin/../lib/gcc/arm-linux-gnueabihf/7.2.1/../../../../arm-linux-gnueabihf/bin/ld: cannot find crti.o: No such file or directory
-/usr/local/bin/gcc-linaro-7.2.1-2017.11-i686_arm-linux-gnueabihf/bin/../lib/gcc/arm-linux-gnueabihf/7.2.1/../../../../arm-linux-gnueabihf/bin/ld: cannot find -lpthread
-/usr/local/bin/gcc-linaro-7.2.1-2017.11-i686_arm-linux-gnueabihf/bin/../lib/gcc/arm-linux-gnueabihf/7.2.1/../../../../arm-linux-gnueabihf/bin/ld: cannot find -liio
-/usr/local/bin/gcc-linaro-7.2.1-2017.11-i686_arm-linux-gnueabihf/bin/../lib/gcc/arm-linux-gnueabihf/7.2.1/../../../../arm-linux-gnueabihf/bin/ld: cannot find -lm
-```
+Note: previously a wrong path was given here, make sure the path to sysroot is in fact correct
 
 
 For the actual example:
 
 ```bash
-arm-linux-gnueabihf-gcc -mfloat-abi=hard  --sysroot=$HOME/pluto-0.30.sysroot -std=gnu99 -g -o pluto_stream ad9361-iiostream.c -lpthread -liio -lm -Wall -Wextra
-In file included from ad9361-iiostream.c:10:0:
-/usr/local/bin/gcc-linaro-7.2.1-2017.11-i686_arm-linux-gnueabihf/lib/gcc/arm-linux-gnueabihf/7.2.1/include/stdint.h:9:16: fatal error: stdint.h: No such file or directory
- # include_next <stdint.h>
+$PLUTOSDR_TOOLCHAIN/arm-linux-gnueabihf-gcc -mfloat-abi=hard  --sysroot=$PLUTOSDR_SYSROOT -std=gnu99 -g -o pluto_stream ad9361-iiostream.c -lpthread -liio -lm -Wall -Wextra
 ```
+Which outputs the correct file.
+
+# Transferring the files onto the pluto
+Use the command:
+```bash
+sudo scp -O ads9361_libiio_txrx.bin  root@192.168.2.1:/tmp/
+```
+
+Afterwards transfer data back using the command
+```bash
+sudo scp -O root@192.168.2.1:/tmp/data/* $PWD/data/
+```
+
+Important is to specify -O to make sure there's reverse-compatibility with the client's version of scp / ssh.

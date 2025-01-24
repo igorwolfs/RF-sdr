@@ -1,11 +1,8 @@
-cmake_minimum_required(VERSION 3.3)
+cmake_minimum_required(VERSION 3.10)
 
-set(COMPILER_PATH "/tools/Xilinx/Vitis/2023.2/gnu/aarch32/lin/gcc-arm-linux-gnueabi/bin/arm-linux-gnueabihf")
-# set(CMAKE_C_COMPILER "/usr/local/bin/gcc-linaro-7.2.1-2017.11-i686_arm-linux-gnueabihf/bin/arm-linux-gnueabihf-gcc")
-# set(CMAKE_CXX_COMPILER "/usr/local/bin/gcc-linaro-7.2.1-2017.11-i686_arm-linux-gnueabihf/bin/arm-linux-gnueabihf-gcc/arm-linux-gnueabihf-g++")
-set (CMAKE_C_COMPILER  "${COMPILER_PATH}-gcc")
-set (CMAKE_CXX_COMPILER  "${COMPILER_PATH}-g++")
-set (CMAKE_SYSROOT "${HOME}/Work/Projects/rf_sdr_project/build_env/pluto-0.39.sysroot")
+set (CMAKE_C_COMPILER  "$ENV{PLUTOSDR_TOOLCHAIN}/arm-linux-gnueabihf-gcc")
+set (CMAKE_CXX_COMPILER  "$ENV{PLUTOSDR_TOOLCHAIN}/arm-linux-gnueabihf-g++")
+set (CMAKE_SYSROOT "$ENV{PLUTOSDR_SYSROOT}")
 project(ads9361_test C)
 
 
