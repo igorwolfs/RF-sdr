@@ -8,6 +8,10 @@
     - Then try it using the iio library
     - Then try it directly accessing the peripheral drivers (if possible)
 
+## TOOD
+- Implement Lorawan demodulation
+- Implement Lorawan modulation
+- Try to decode the messages connecting your SDR to the lorawan antenna
 
 # Program the fpga through jtag
 - solder 1.27 mm on your pluto
